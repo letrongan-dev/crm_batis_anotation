@@ -16,61 +16,40 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.crm.filter.AuthFilter;
 
-
 @Configuration
 @EnableWebSecurity
 @Order(1)
-public class SecurityConfig extends WebSecurityConfigurerAdapter{
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private UserDetailsService userDetailsService;
-	
+
 	@Bean
 	@Override
 	public AuthenticationManager authenticationManagerBean() throws Exception {
 		return super.authenticationManagerBean();
 	}
-	
+
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(userDetailsService)
-		.passwordEncoder(new BCryptPasswordEncoder());
+		auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
 	}
-	
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors();
-		
-		http.csrf().disable()
-		.authorizeRequests()
-		.antMatchers("/api/auth/**")
-		.permitAll()
-		.and()
-		.authorizeRequests()
-		.antMatchers("/api/user/**")
-		.hasAnyRole("ADMIN")
-		.and()
-		.authorizeRequests()
-		.antMatchers("/api/task/**")
-		.hasAnyRole("ADMIN", "LEADER")
-		.and()
-		.authorizeRequests()
-		.anyRequest()
-		.authenticated();
-		
-		
+
+		http.csrf().disable().authorizeRequests().antMatchers("/api/auth/**").permitAll().and().authorizeRequests()
+				.antMatchers("/api/user/**").hasAnyRole("ADMIN").and().authorizeRequests().antMatchers("/api/task/**")
+				.hasAnyRole("ADMIN", "LEADER").and().authorizeRequests().anyRequest().authenticated();
+
 		http.addFilter(new AuthFilter(authenticationManager(), userDetailsService));
-		
+
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
-	
+
 	@Override
 	public void configure(WebSecurity web) throws Exception {
-		web.ignoring()
-		.antMatchers("/v2/api-docs",
-		"/configuration/ui",
-		"/swagger-resources/**",
-		"/configuration/security",
-		"/swagger-ui.html",
-		"/webjars/**");
+		web.ignoring().antMatchers("/v2/api-docs", "/configuration/ui", "/swagger-resources/**",
+				"/configuration/security", "/swagger-ui.html", "/webjars/**");
 	}
 }
